@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${title} + ' · Lab Resource Troubleshooting'">Lab Resource Troubleshooting</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+
+<!-- ============================ SIDEBAR ============================ -->
+<aside th:fragment="sidebar(active)" class="sidebar">
+    <div class="brand">
+        <span class="brand-mark">LR</span>
+        <span class="brand-text">
+            <strong>Lab Resource</strong>
+            <small>Troubleshooting</small>
+        </span>
+    </div>
+
+    <nav class="nav">
+        <th:block th:if="${currentRole == 'ADMIN'}">
+            <span class="nav-section">Administration</span>
+            <a th:href="@{/admin/dashboard}" th:classappend="${active == 'admin-dashboard'} ? 'active'">
+                <span class="nav-ico">▤</span> Dashboard
+            </a>
+            <a th:href="@{/admin/labs}" th:classappend="${active == 'admin-labs'} ? 'active'">
+                <span class="nav-ico">▢</span> Labs
+            </a>
+            <a th:href="@{/admin/technicians}" th:classappend="${active == 'admin-technicians'} ? 'active'">
+                <span class="nav-ico">✦</span> Technicians
+            </a>
+            <a th:href="@{/admin/complaints}" th:classappend="${active == 'admin-complaints'} ? 'active'">
+                <span class="nav-ico">☰</span> All Complaints
+            </a>
+        </th:block>
+
+        <th:block th:if="${currentRole == 'TECHNICIAN'}">
+            <span class="nav-section">Workspace</span>
+            <a th:href="@{/technician/complaints}" th:classappend="${active == 'technician-complaints'} ? 'active'">
+                <span class="nav-ico">☰</span> Assigned Complaints
+            </a>
+        </th:block>
+
+        <th:block th:if="${currentRole == 'STUDENT'}">
+            <span class="nav-section">My Workspace</span>
+            <a th:href="@{/student/complaints}" th:classappend="${active == 'student-complaints'} ? 'active'">
+                <span class="nav-ico">☰</span> My Complaints
+            </a>
+        </th:block>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="me">
+            <span class="avatar" th:text="${currentUser != null ? #strings.substring(currentUser.name,0,1) : '?'}">U</span>
+            <span class="me-info">
+                <strong th:text="${currentUser != null ? currentUser.name : ''}">User</strong>
+                <small th:text="${currentUser != null ? currentUser.role : ''}">ROLE</small>
+            </span>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-ghost btn-block">Sign out</button>
+        </form>
+    </div>
+</aside>
+
+<!-- ============================ TOPBAR ============================ -->
+<header th:fragment="topbar(title)" class="topbar">
+    <h1 class="topbar-title" th:text="${title}">Dashboard</h1>
+    <div class="topbar-right">
+        <span class="pill" th:text="${currentUser != null ? currentUser.email : ''}">email</span>
+    </div>
+</header>
+
+<!-- ============================ ALERTS ============================ -->
+<div th:fragment="alerts" class="alerts">
+    <div class="alert alert-success" th:if="${successMessage}" role="status">
+        <span th:text="${successMessage}">Success</span>
+    </div>
+    <div class="alert alert-error" th:if="${errorMessage}" role="alert">
+        <span th:text="${errorMessage}">Error</span>
+    </div>
+    <div class="alert alert-success" th:if="${registerSuccess}" role="status">
+        <span th:text="${registerSuccess}">Success</span>
+    </div>
+    <div class="alert alert-info" th:if="${infoMessage}" role="status">
+        <span th:text="${infoMessage}">Info</span>
+    </div>
+</div>
+
+<!-- ============================ STATUS BADGE ============================ -->
+<span th:fragment="statusBadge(status)"
+      class="badge"
+      th:classappend="${'status-' + #strings.replace(#strings.toLowerCase(status.name()), '_', '-')}"
+      th:text="${#strings.capitalize(#strings.toLowerCase(#strings.replace(status.name(), '_', ' ')))}">STATUS</span>
+
+<!-- ============================ SCRIPTS ============================ -->
+<th:block th:fragment="scripts">
+    <script th:src="@{/js/app.js}"></script>
+</th:block>
+
+</body>
+</html>

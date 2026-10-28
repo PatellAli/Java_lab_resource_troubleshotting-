@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin Dashboard')}"></head>
+<body class="app-body">
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('admin-dashboard')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Dashboard')}"></header>
+        <main class="content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <section class="stat-grid">
+                <article class="stat-card">
+                    <span class="stat-label">Total complaints</span>
+                    <span class="stat-value" th:text="${summary.totalComplaints}">0</span>
+                </article>
+                <article class="stat-card accent-pending">
+                    <span class="stat-label">Pending</span>
+                    <span class="stat-value" th:text="${summary.pendingComplaints}">0</span>
+                </article>
+                <article class="stat-card accent-progress">
+                    <span class="stat-label">In progress</span>
+                    <span class="stat-value" th:text="${summary.inProgressComplaints}">0</span>
+                </article>
+                <article class="stat-card accent-completed">
+                    <span class="stat-label">Completed</span>
+                    <span class="stat-value" th:text="${summary.completedComplaints}">0</span>
+                </article>
+                <article class="stat-card accent-warning">
+                    <span class="stat-label">Labs without technician</span>
+                    <span class="stat-value" th:text="${summary.labsWithoutTechnicianCount}">0</span>
+                </article>
+            </section>
+
+            <section class="chart-grid">
+                <article class="card">
+                    <div class="card-head"><h2>Complaints by laboratory</h2></div>
+                    <div class="empty-inline" th:if="${#lists.isEmpty(summary.complaintsByLab)}">No laboratory data available.</div>
+                    <ul class="bar-chart" th:unless="${#lists.isEmpty(summary.complaintsByLab)}">
+                        <li th:each="c : ${summary.complaintsByLab}">
+                            <span class="bar-label" th:text="${c.label}">Lab</span>
+                            <span class="bar-track">
+                                <span class="bar-fill" th:style="'width:' + ${c.value * 100 / maxByLab} + '%'"></span>
+                            </span>
+                            <span class="bar-value" th:text="${c.value}">0</span>
+                        </li>
+                    </ul>
+                </article>
+
+                <article class="card">
+                    <div class="card-head"><h2>Complaints by type</h2></div>
+                    <div class="empty-inline" th:if="${#lists.isEmpty(summary.complaintsByType)}">No complaint type data available.</div>
+                    <ul class="bar-chart" th:unless="${#lists.isEmpty(summary.complaintsByType)}">
+                        <li th:each="c : ${summary.complaintsByType}">
+                            <span class="bar-label" th:text="${c.label}">TYPE</span>
+                            <span class="bar-track">
+                                <span class="bar-fill alt" th:style="'width:' + ${c.value * 100 / maxByType} + '%'"></span>
+                            </span>
+                            <span class="bar-value" th:text="${c.value}">0</span>
+                        </li>
+                    </ul>
+                </article>
+            </section>
+
+            <section class="card">
+                <div class="card-head"><h2>Status distribution</h2></div>
+                <div class="stacked-bar" th:if="${summary.totalComplaints > 0}">
+                    <span class="seg seg-pending"
+                          th:style="'width:' + ${summary.pendingComplaints * 100 / statusTotal} + '%'"
+                          th:title="'Pending: ' + ${summary.pendingComplaints}"></span>
+                    <span class="seg seg-progress"
+                          th:style="'width:' + ${summary.inProgressComplaints * 100 / statusTotal} + '%'"
+                          th:title="'In progress: ' + ${summary.inProgressComplaints}"></span>
+                    <span class="seg seg-completed"
+                          th:style="'width:' + ${summary.completedComplaints * 100 / statusTotal} + '%'"
+                          th:title="'Completed: ' + ${summary.completedComplaints}"></span>
+                </div>
+                <div class="empty-inline" th:if="${summary.totalComplaints == 0}">No complaints recorded yet.</div>
+                <ul class="legend">
+                    <li><span class="dot seg-pending"></span> Pending <strong th:text="${summary.pendingComplaints}">0</strong></li>
+                    <li><span class="dot seg-progress"></span> In progress <strong th:text="${summary.inProgressComplaints}">0</strong></li>
+                    <li><span class="dot seg-completed"></span> Completed <strong th:text="${summary.completedComplaints}">0</strong></li>
+                </ul>
+            </section>
+
+            <section class="card card-warning" th:if="${not #lists.isEmpty(summary.labsWithoutTechnician)}">
+                <div class="card-head">
+                    <h2>⚠ Labs without an assigned technician</h2>
+                    <p class="muted">Complaints for these labs may not reach a technician. Assign a technician to resolve this.</p>
+                </div>
+                <ul class="warning-list">
+                    <li th:each="lab : ${summary.labsWithoutTechnician}">
+                        <span th:text="${lab.name}">Lab</span>
+                        <span class="muted" th:if="${lab.location}" th:text="${lab.location}">Location</span>
+                        <a class="btn btn-sm btn-primary" th:href="@{/admin/labs}">Assign</a>
+                    </li>
+                </ul>
+            </section>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

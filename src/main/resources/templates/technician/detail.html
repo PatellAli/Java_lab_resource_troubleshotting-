@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Complaint Details')}"></head>
+<body class="app-body">
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('technician-complaints')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Complaint Details')}"></header>
+        <main class="content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <div class="breadcrumb">
+                <a th:href="@{/technician/complaints}">← Back to assigned complaints</a>
+            </div>
+
+            <div class="split">
+                <section class="card">
+                    <div class="card-head row">
+                        <h2 th:text="'Complaint #' + ${complaint.id}">Complaint</h2>
+                        <span th:replace="~{fragments/layout :: statusBadge(${complaint.status})}">STATUS</span>
+                    </div>
+
+                    <dl class="detail-grid">
+                        <div><dt>Laboratory</dt><dd th:text="${complaint.labName}">Lab</dd></div>
+                        <div><dt>Resource number</dt><dd class="mono" th:text="${complaint.resourceNumber}">PC-01</dd></div>
+                        <div><dt>Complaint type</dt><dd th:text="${complaint.complaintType}">TYPE</dd></div>
+                        <div><dt>Reported by</dt><dd th:text="${complaint.studentName}">Student</dd></div>
+                        <div><dt>Student email</dt><dd th:text="${complaint.studentEmail}">email</dd></div>
+                        <div><dt>Created</dt><dd class="mono" th:text="${complaint.createdAt != null ? #temporals.format(complaint.createdAt, 'yyyy-MM-dd HH:mm') : '—'}">—</dd></div>
+                        <div><dt>Last updated</dt><dd class="mono" th:text="${complaint.updatedAt != null ? #temporals.format(complaint.updatedAt, 'yyyy-MM-dd HH:mm') : '—'}">—</dd></div>
+                    </dl>
+
+                    <div class="block">
+                        <h3>Problem description</h3>
+                        <p class="pre-wrap" th:text="${complaint.description}">Description</p>
+                    </div>
+
+                    <div class="block" th:if="${complaint.technicianNote}">
+                        <h3>Latest technician note</h3>
+                        <p class="pre-wrap" th:text="${complaint.technicianNote}">Note</p>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-head">
+                        <h2>Update status</h2>
+                        <p class="muted">Move the complaint forward and optionally leave a note for the student.</p>
+                    </div>
+
+                    <div class="alert alert-error" th:if="${formHasErrors}" role="alert">
+                        Please correct the highlighted fields.
+                    </div>
+
+                    <div class="alert alert-info" th:if="${complaint.status.name() == 'COMPLETED'}" role="status">
+                        This complaint is completed and can no longer be modified.
+                    </div>
+
+                    <form th:if="${complaint.status.name() != 'COMPLETED'}"
+                          th:action="@{'/technician/complaints/' + ${complaint.id} + '/status'}"
+                          th:object="${statusForm}" method="post" novalidate data-loading>
+                        <div class="field">
+                            <label for="status">New status</label>
+                            <select id="status" th:field="*{status}" required>
+                                <option value="">Select a status…</option>
+                                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                                        th:disabled="${s == complaint.status}"></option>
+                            </select>
+                            <p class="field-error" th:if="${#fields.hasErrors('status')}" th:errors="*{status}">Status error</p>
+                        </div>
+                        <div class="field">
+                            <label for="technicianNote">Technician note <span class="opt">(optional)</span></label>
+                            <textarea id="technicianNote" th:field="*{technicianNote}" rows="4"
+                                      placeholder="Add progress details or resolution summary…"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" data-loading-text="Saving…">Save status</button>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

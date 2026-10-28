@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sign in')}"></head>
+<body class="auth-body">
+<main class="auth-shell">
+    <section class="auth-card">
+        <div class="auth-brand">
+            <span class="brand-mark lg">LR</span>
+            <h1>Lab Resource Troubleshooting</h1>
+            <p>Report and resolve laboratory equipment issues.</p>
+        </div>
+
+        <div class="alert alert-success" th:if="${successMessage}" role="status">
+            <span th:text="${successMessage}">Success</span>
+        </div>
+        <div class="alert alert-error" th:if="${loginError}" role="alert">
+            <span th:text="${loginError}">Error</span>
+        </div>
+
+        <form th:action="@{/login}" th:object="${loginForm}" method="post" novalidate data-loading>
+            <div class="field">
+                <label for="email">Email address</label>
+                <input type="email" id="email" th:field="*{email}" autocomplete="username"
+                       placeholder="you@college.edu" required/>
+                <p class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email error</p>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" id="password" th:field="*{password}" autocomplete="current-password"
+                       placeholder="••••••••" required/>
+                <p class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password error</p>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" data-loading-text="Signing in…">Sign in</button>
+        </form>
+
+        <p class="auth-alt">
+            New student? <a th:href="@{/register}">Create an account</a>
+        </p>
+    </section>
+</main>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

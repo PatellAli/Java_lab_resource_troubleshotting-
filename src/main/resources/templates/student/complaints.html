@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Complaints')}"></head>
+<body class="app-body">
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('student-complaints')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('My Complaints')}"></header>
+        <main class="content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <section class="card">
+                <div class="card-head">
+                    <h2>Submit a new complaint</h2>
+                    <p class="muted">Describe the issue and the affected resource. Your complaint is routed to the technician assigned to the selected lab.</p>
+                </div>
+
+                <div class="alert alert-error" th:if="${formHasErrors}" role="alert">
+                    Please correct the highlighted fields and submit again.
+                </div>
+
+                <form th:action="@{/student/complaints}" th:object="${complaintForm}" method="post" class="form-grid" novalidate data-loading>
+                    <div class="field span-2">
+                        <label for="labId">Laboratory</label>
+                        <select id="labId" th:field="*{labId}" required>
+                            <option value="">Select a laboratory…</option>
+                            <option th:each="lab : ${labs}" th:value="${lab.id}"
+                                    th:text="${lab.name} + (${lab.location} != null ? ' — ' + ${lab.location} : '') + (${lab.assignedTechnicianName} != null ? ' · Technician: ' + ${lab.assignedTechnicianName} : ' · No technician assigned')"></option>
+                        </select>
+                        <p class="field-error" th:if="${#fields.hasErrors('labId')}" th:errors="*{labId}">Lab error</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="resourceNumber">Resource number</label>
+                        <input type="text" id="resourceNumber" th:field="*{resourceNumber}"
+                               placeholder="e.g. PC-12" maxlength="50" required/>
+                        <p class="field-error" th:if="${#fields.hasErrors('resourceNumber')}" th:errors="*{resourceNumber}">Resource error</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="complaintType">Complaint type</label>
+                        <select id="complaintType" th:field="*{complaintType}" required>
+                            <option value="">Select a type…</option>
+                            <option th:each="type : ${complaintTypes}" th:value="${type}" th:text="${type}"></option>
+                        </select>
+                        <p class="field-error" th:if="${#fields.hasErrors('complaintType')}" th:errors="*{complaintType}">Type error</p>
+                    </div>
+
+                    <div class="field span-2">
+                        <label for="description">Description</label>
+                        <textarea id="description" th:field="*{description}" rows="4"
+                                  placeholder="Describe the problem in detail…" required></textarea>
+                        <p class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Description error</p>
+                    </div>
+
+                    <div class="form-actions span-2">
+                        <button type="submit" class="btn btn-primary" data-loading-text="Submitting…">Submit complaint</button>
+                    </div>
+                </form>
+
+                <p class="empty-inline" th:if="${#lists.isEmpty(labs)}">
+                    No active laboratories are available right now. Please contact the administrator.
+                </p>
+            </section>
+
+            <section class="card">
+                <div class="card-head row">
+                    <div>
+                        <h2>My complaints</h2>
+                        <p class="muted" th:if="${complaints.totalElements > 0}">
+                            <span th:text="${complaints.totalElements}">0</span> complaint(s) submitted.
+                        </p>
+                    </div>
+                    <input type="search" class="search" placeholder="Filter…" data-filter-input="studentComplaints"/>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(complaints.content)}">
+                    <div class="empty-ico">☰</div>
+                    <h3>No complaints yet</h3>
+                    <p>Use the form above to submit your first complaint.</p>
+                </div>
+
+                <div class="table-wrap" th:unless="${#lists.isEmpty(complaints.content)}">
+                    <table class="table" id="studentComplaints">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Laboratory</th>
+                            <th>Resource</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Assigned to</th>
+                            <th>Created</th>
+                            <th>Technician note</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${complaints.content}">
+                            <td class="mono">#<span th:text="${c.id}">1</span></td>
+                            <td th:text="${c.labName}">Lab</td>
+                            <td class="mono" th:text="${c.resourceNumber}">PC-01</td>
+                            <td th:text="${c.complaintType}">TYPE</td>
+                            <td><span th:replace="~{fragments/layout :: statusBadge(${c.status})}">STATUS</span></td>
+                            <td th:text="${c.technicianName} ?: '—'">—</td>
+                            <td class="mono" th:text="${c.createdAt != null ? #temporals.format(c.createdAt, 'yyyy-MM-dd HH:mm') : '—'}">—</td>
+                            <td class="note" th:text="${c.technicianNote} ?: '—'">—</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" th:if="${complaints.totalPages > 1}">
+                    <a class="btn btn-ghost"
+                       th:classappend="${complaints.pageNumber == 0} ? 'disabled'"
+                       th:href="@{/student/complaints(page=${complaints.pageNumber - 1})}">← Previous</a>
+                    <span class="page-info">Page <span th:text="${complaints.pageNumber + 1}">1</span> of <span th:text="${complaints.totalPages}">1</span></span>
+                    <a class="btn btn-ghost"
+                       th:classappend="${complaints.last} ? 'disabled'"
+                       th:href="@{/student/complaints(page=${complaints.pageNumber + 1})}">Next →</a>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

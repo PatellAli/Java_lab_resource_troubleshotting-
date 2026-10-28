@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Assigned Complaints')}"></head>
+<body class="app-body">
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('technician-complaints')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Assigned Complaints')}"></header>
+        <main class="content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <section class="card">
+                <div class="card-head row">
+                    <div>
+                        <h2>Complaints assigned to you</h2>
+                        <p class="muted" th:if="${complaints.totalElements > 0}">
+                            <span th:text="${complaints.totalElements}">0</span> complaint(s) routed to you.
+                        </p>
+                    </div>
+                    <input type="search" class="search" placeholder="Filter…" data-filter-input="techComplaints"/>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(complaints.content)}">
+                    <div class="empty-ico">☰</div>
+                    <h3>No complaints assigned</h3>
+                    <p>Complaints submitted for your labs will appear here.</p>
+                </div>
+
+                <div class="table-wrap" th:unless="${#lists.isEmpty(complaints.content)}">
+                    <table class="table" id="techComplaints">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Laboratory</th>
+                            <th>Resource</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Student</th>
+                            <th>Created</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${complaints.content}">
+                            <td class="mono">#<span th:text="${c.id}">1</span></td>
+                            <td th:text="${c.labName}">Lab</td>
+                            <td class="mono" th:text="${c.resourceNumber}">PC-01</td>
+                            <td th:text="${c.complaintType}">TYPE</td>
+                            <td><span th:replace="~{fragments/layout :: statusBadge(${c.status})}">STATUS</span></td>
+                            <td th:text="${c.studentName}">Student</td>
+                            <td class="mono" th:text="${c.createdAt != null ? #temporals.format(c.createdAt, 'yyyy-MM-dd HH:mm') : '—'}">—</td>
+                            <td><a class="btn btn-sm btn-primary" th:href="@{'/technician/complaints/' + ${c.id}}">Manage</a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" th:if="${complaints.totalPages > 1}">
+                    <a class="btn btn-ghost"
+                       th:classappend="${complaints.pageNumber == 0} ? 'disabled'"
+                       th:href="@{/technician/complaints(page=${complaints.pageNumber - 1})}">← Previous</a>
+                    <span class="page-info">Page <span th:text="${complaints.pageNumber + 1}">1</span> of <span th:text="${complaints.totalPages}">1</span></span>
+                    <a class="btn btn-ghost"
+                       th:classappend="${complaints.last} ? 'disabled'"
+                       th:href="@{/technician/complaints(page=${complaints.pageNumber + 1})}">Next →</a>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

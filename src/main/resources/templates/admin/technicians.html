@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Technician Management')}"></head>
+<body class="app-body">
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('admin-technicians')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Technician Management')}"></header>
+        <main class="content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <section class="card">
+                <div class="card-head">
+                    <h2>Create a technician account</h2>
+                    <p class="muted">Technicians can be assigned to labs and view complaints routed to them.</p>
+                </div>
+
+                <div class="alert alert-error" th:if="${createTechnicianError}" role="alert">
+                    <span th:text="${createTechnicianError}">Error</span>
+                </div>
+
+                <form th:action="@{/admin/technicians}" th:object="${technicianForm}" method="post" class="form-grid" novalidate data-loading>
+                    <div class="field">
+                        <label for="name">Full name</label>
+                        <input type="text" id="name" th:field="*{name}" placeholder="e.g. Alex Mason" maxlength="100" required/>
+                        <p class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name error</p>
+                    </div>
+                    <div class="field">
+                        <label for="email">Email address</label>
+                        <input type="email" id="email" th:field="*{email}" placeholder="technician@college.edu" maxlength="150" required/>
+                        <p class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email error</p>
+                    </div>
+                    <div class="field span-2">
+                        <label for="password">Temporary password</label>
+                        <input type="password" id="password" th:field="*{password}" placeholder="At least 6 characters" minlength="6" maxlength="100" required/>
+                        <p class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password error</p>
+                    </div>
+                    <div class="form-actions span-2">
+                        <button type="submit" class="btn btn-primary" data-loading-text="Creating…">Create technician</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <div class="card-head row">
+                    <div>
+                        <h2>Technicians</h2>
+                        <p class="muted"><span th:text="${#lists.size(technicians)}">0</span> technician(s).</p>
+                    </div>
+                    <input type="search" class="search" placeholder="Filter…" data-filter-input="techList"/>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(technicians)}">
+                    <div class="empty-ico">✦</div>
+                    <h3>No technicians yet</h3>
+                    <p>Create your first technician account using the form above.</p>
+                </div>
+
+                <div class="card-grid" id="techList" th:unless="${#lists.isEmpty(technicians)}">
+                    <article class="mini-card" th:each="tech : ${technicians}">
+                        <header class="mini-card-head">
+                            <div>
+                                <h3 th:text="${tech.name}">Technician</h3>
+                                <p class="muted" th:text="${tech.email}">email</p>
+                            </div>
+                            <span class="badge" th:classappend="${tech.active} ? 'status-completed' : 'status-pending'"
+                                  th:text="${tech.active} ? 'Active' : 'Inactive'">Active</span>
+                        </header>
+
+                        <details class="edit-panel">
+                            <summary>Edit name</summary>
+                            <form th:action="@{'/admin/technicians/' + ${tech.id}}" method="post" novalidate data-loading>
+                                <div class="field">
+                                    <label th:for="'tname-' + ${tech.id}">Full name</label>
+                                    <input type="text" th:id="'tname-' + ${tech.id}" name="name" th:value="${tech.name}" maxlength="100" required/>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm btn-block" data-loading-text="Saving…">Save name</button>
+                            </form>
+                        </details>
+
+                        <form th:action="@{'/admin/technicians/' + ${tech.id} + '/status'}" method="post" class="mini-actions">
+                            <input type="hidden" name="active" th:value="${!tech.active}"/>
+                            <button type="submit" class="btn btn-sm"
+                                    th:classappend="${tech.active} ? 'btn-danger' : 'btn-ghost'"
+                                    th:attr="data-confirm=${tech.active} ? 'Deactivate this technician?' : null"
+                                    th:text="${tech.active} ? 'Deactivate' : 'Activate'">Toggle</button>
+                        </form>
+                    </article>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Lab Management')}"></head>
+<body class="app-body">
+<div class="layout">
+    <aside th:replace="~{fragments/layout :: sidebar('admin-labs')}"></aside>
+    <div class="main">
+        <header th:replace="~{fragments/layout :: topbar('Lab Management')}"></header>
+        <main class="content">
+            <div th:replace="~{fragments/layout :: alerts}"></div>
+
+            <section class="card">
+                <div class="card-head">
+                    <h2>Create a laboratory</h2>
+                    <p class="muted">Labs with an active assigned technician can receive student complaints.</p>
+                </div>
+
+                <div class="alert alert-error" th:if="${createLabError}" role="alert">
+                    <span th:text="${createLabError}">Error</span>
+                </div>
+
+                <form th:action="@{/admin/labs}" th:object="${labForm}" method="post" class="form-grid" novalidate data-loading>
+                    <div class="field">
+                        <label for="name">Lab name</label>
+                        <input type="text" id="name" th:field="*{name}" placeholder="e.g. Computer Lab A" maxlength="100" required/>
+                        <p class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name error</p>
+                    </div>
+                    <div class="field">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" th:field="*{location}" placeholder="e.g. Block 2, Room 204" maxlength="150"/>
+                        <p class="field-error" th:if="${#fields.hasErrors('location')}" th:errors="*{location}">Location error</p>
+                    </div>
+                    <div class="field">
+                        <label for="assignedTechnicianId">Assigned technician</label>
+                        <select id="assignedTechnicianId" th:field="*{assignedTechnicianId}">
+                            <option value="">Unassigned</option>
+                            <option th:each="tech : ${technicians}" th:value="${tech.id}"
+                                    th:text="${tech.name} + (${tech.active} ? '' : ' (inactive)')"
+                                    th:disabled="${!tech.active}"></option>
+                        </select>
+                    </div>
+                    <div class="form-actions span-2">
+                        <button type="submit" class="btn btn-primary" data-loading-text="Creating…">Create lab</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <div class="card-head row">
+                    <div>
+                        <h2>Laboratories</h2>
+                        <p class="muted"><span th:text="${#lists.size(labs)}">0</span> lab(s) configured.</p>
+                    </div>
+                    <input type="search" class="search" placeholder="Filter…" data-filter-input="labList"/>
+                </div>
+
+                <div class="alert alert-error" th:if="${editLabError}" role="alert">
+                    <span th:text="${editLabError}">Error</span>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(labs)}">
+                    <div class="empty-ico">▢</div>
+                    <h3>No laboratories yet</h3>
+                    <p>Create your first lab using the form above.</p>
+                </div>
+
+                <div class="card-grid" id="labList" th:unless="${#lists.isEmpty(labs)}">
+                    <article class="mini-card" th:each="lab : ${labs}">
+                        <header class="mini-card-head">
+                            <div>
+                                <h3 th:text="${lab.name}">Lab</h3>
+                                <p class="muted" th:text="${lab.location} ?: 'No location set'">Location</p>
+                            </div>
+                            <span class="badge" th:classappend="${lab.active} ? 'status-completed' : 'status-pending'"
+                                  th:text="${lab.active} ? 'Active' : 'Inactive'">Active</span>
+                        </header>
+
+                        <p class="mini-meta">
+                            Technician:
+                            <strong th:text="${lab.assignedTechnicianName} ?: 'Unassigned'">Unassigned</strong>
+                        </p>
+
+                        <details class="edit-panel">
+                            <summary>Edit details &amp; assignment</summary>
+                            <form th:action="@{'/admin/labs/' + ${lab.id}}" method="post" novalidate data-loading>
+                                <div class="field">
+                                    <label th:for="'name-' + ${lab.id}">Name</label>
+                                    <input type="text" th:id="'name-' + ${lab.id}" name="name" th:value="${lab.name}" maxlength="100" required/>
+                                </div>
+                                <div class="field">
+                                    <label th:for="'location-' + ${lab.id}">Location</label>
+                                    <input type="text" th:id="'location-' + ${lab.id}" name="location" th:value="${lab.location}" maxlength="150"/>
+                                </div>
+                                <div class="field">
+                                    <label th:for="'tech-' + ${lab.id}">Assigned technician</label>
+                                    <select th:id="'tech-' + ${lab.id}" name="assignedTechnicianId">
+                                        <option value="">Unassigned</option>
+                                        <option th:each="tech : ${technicians}" th:value="${tech.id}"
+                                                th:text="${tech.name} + (${tech.active} ? '' : ' (inactive)')"
+                                                th:selected="${lab.assignedTechnicianId != null and lab.assignedTechnicianId == tech.id}"></option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm btn-block" data-loading-text="Saving…">Save changes</button>
+                            </form>
+                        </details>
+
+                        <form th:action="@{'/admin/labs/' + ${lab.id} + '/status'}" method="post" class="mini-actions">
+                            <input type="hidden" name="active" th:value="${!lab.active}"/>
+                            <button type="submit" class="btn btn-sm"
+                                    th:classappend="${lab.active} ? 'btn-danger' : 'btn-ghost'"
+                                    th:attr="data-confirm=${lab.active} ? 'Deactivate this lab?' : null"
+                                    th:text="${lab.active} ? 'Deactivate' : 'Activate'">Toggle</button>
+                        </form>
+                    </article>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

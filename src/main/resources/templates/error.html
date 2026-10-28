@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Something went wrong · Lab Resource Troubleshooting</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body class="auth-body">
+<main class="auth-shell">
+    <section class="auth-card center">
+        <div class="auth-brand">
+            <span class="brand-mark lg" th:text="${status} ?: '!'">!</span>
+            <h1 th:text="${error} ?: 'Something went wrong'">Something went wrong</h1>
+            <p th:text="${message} ?: 'An unexpected error occurred. Please try again.'">An unexpected error occurred.</p>
+        </div>
+        <a class="btn btn-primary btn-block" th:href="@{/}">Return to my dashboard</a>
+    </section>
+</main>
+</body>
+</html>
